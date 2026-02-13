@@ -1,8 +1,21 @@
 # agent-sessions
 
+[![PyPI](https://img.shields.io/pypi/v/agent-sessions)](https://pypi.org/project/agent-sessions/)
+[![Tests](https://github.com/larsderidder/agent-sessions/actions/workflows/test.yml/badge.svg)](https://github.com/larsderidder/agent-sessions/actions/workflows/test.yml)
+[![Python 3.11+](https://img.shields.io/pypi/pyversions/agent-sessions)](https://pypi.org/project/agent-sessions/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Discover and inspect local AI coding agent sessions (Claude Code, Codex, Pi).
 
-> Looking for a ready-made solution for supervising your agents? Check out [Tether](https://github.com/larsderidder/tether).
+> **Looking for a ready-made supervision tool?** Check out [Tether](https://github.com/larsderidder/tether).
+
+## Install
+
+```bash
+pip install agent-sessions
+```
+
+## Usage
 
 ```python
 from agent_sessions import discover_sessions, get_session_detail, RunnerType
@@ -24,7 +37,7 @@ for msg in detail.messages:
     print(f"[{msg.role}] {msg.content[:80]}")
 ```
 
-## What it discovers
+## Supported agents
 
 | Agent | Session location | Format |
 |-------|-----------------|--------|
@@ -34,11 +47,9 @@ for msg in detail.messages:
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
 
-## Install
+## Status
 
-```bash
-pip install agent-sessions
-```
+Beta. The API may change between minor versions until 1.0.
 
 ## License
 
