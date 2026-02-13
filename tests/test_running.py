@@ -38,9 +38,7 @@ def test_find_running_claude_sessions_empty():
 
 
 def test_find_running_codex_sessions():
-    ps_output = (
-        "lars  12345  0.5  1.0  100000  50000  ?  S  10:00  0:05 codex resume a1b2c3d4-e5f6-7890-abcd-ef1234567890\n"
-    )
+    ps_output = "lars  12345  0.5  1.0  100000  50000  ?  S  10:00  0:05 codex resume a1b2c3d4-e5f6-7890-abcd-ef1234567890\n"
     with _mock_ps(ps_output):
         result = find_running_codex_sessions()
     assert result == {"a1b2c3d4-e5f6-7890-abcd-ef1234567890"}

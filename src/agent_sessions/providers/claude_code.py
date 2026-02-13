@@ -149,6 +149,7 @@ def _parse_session_summary(
             # Use file modification time as fallback
             mtime = session_file.stat().st_mtime
             from datetime import datetime, timezone
+
             last_activity = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
 
         return SessionSummary(
@@ -273,23 +274,27 @@ def get_claude_session_detail(
                             if first_prompt is None:
                                 first_prompt = candidate[:200]
                             last_prompt = candidate[:200]
-                        messages.append(SessionMessage(
-                            role="user",
-                            content=text,
-                            timestamp=timestamp,
-                        ))
+                        messages.append(
+                            SessionMessage(
+                                role="user",
+                                content=text,
+                                timestamp=timestamp,
+                            )
+                        )
 
                 elif record_type == "assistant":
                     message = record.get("message", {})
                     content = message.get("content")
                     text, thinking = _extract_text_content(content, role="assistant")
                     if text or thinking:
-                        messages.append(SessionMessage(
-                            role="assistant",
-                            content=text,
-                            thinking=thinking,
-                            timestamp=timestamp,
-                        ))
+                        messages.append(
+                            SessionMessage(
+                                role="assistant",
+                                content=text,
+                                thinking=thinking,
+                                timestamp=timestamp,
+                            )
+                        )
 
         # Fallback to decoding folder name if cwd not found
         if directory is None:
@@ -299,6 +304,7 @@ def get_claude_session_detail(
         if last_activity is None:
             mtime = session_file.stat().st_mtime
             from datetime import datetime, timezone
+
             last_activity = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
 
         # Apply message limit

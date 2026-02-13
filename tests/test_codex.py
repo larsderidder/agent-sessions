@@ -46,7 +46,11 @@ def test_list_codex_sessions(monkeypatch, tmp_path: Path) -> None:
 
     session_id = "019b2182-8e89-77a1-a675-72857fca4fb1"
     rollout_path = (
-        codex_home / "sessions" / "2026" / "02" / "06"
+        codex_home
+        / "sessions"
+        / "2026"
+        / "02"
+        / "06"
         / f"rollout-2026-02-06T20-00-00-{session_id}.jsonl"
     )
     _write_rollout(rollout_path, session_id)
@@ -66,7 +70,11 @@ def test_get_codex_session_detail(monkeypatch, tmp_path: Path) -> None:
 
     session_id = "019b2182-8e89-77a1-a675-72857fca4fb1"
     rollout_path = (
-        codex_home / "sessions" / "2026" / "02" / "06"
+        codex_home
+        / "sessions"
+        / "2026"
+        / "02"
+        / "06"
         / f"rollout-2026-02-06T20-00-00-{session_id}.jsonl"
     )
     _write_rollout(rollout_path, session_id)

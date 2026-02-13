@@ -21,15 +21,24 @@ def _make_summary(id: str, runner_type: RunnerType, activity: str) -> SessionSum
 
 def test_discover_sessions_combines_providers():
     with (
-        patch("agent_sessions.list_claude_sessions", return_value=[
-            _make_summary("c1", RunnerType.CLAUDE_CODE, "2026-01-03T00:00:00Z"),
-        ]),
-        patch("agent_sessions.list_codex_sessions", return_value=[
-            _make_summary("x1", RunnerType.CODEX, "2026-01-02T00:00:00Z"),
-        ]),
-        patch("agent_sessions.list_pi_sessions", return_value=[
-            _make_summary("p1", RunnerType.PI, "2026-01-01T00:00:00Z"),
-        ]),
+        patch(
+            "agent_sessions.list_claude_sessions",
+            return_value=[
+                _make_summary("c1", RunnerType.CLAUDE_CODE, "2026-01-03T00:00:00Z"),
+            ],
+        ),
+        patch(
+            "agent_sessions.list_codex_sessions",
+            return_value=[
+                _make_summary("x1", RunnerType.CODEX, "2026-01-02T00:00:00Z"),
+            ],
+        ),
+        patch(
+            "agent_sessions.list_pi_sessions",
+            return_value=[
+                _make_summary("p1", RunnerType.PI, "2026-01-01T00:00:00Z"),
+            ],
+        ),
     ):
         sessions = discover_sessions()
 
@@ -41,9 +50,12 @@ def test_discover_sessions_combines_providers():
 def test_discover_sessions_filter_by_runner_type():
     with (
         patch("agent_sessions.list_claude_sessions", return_value=[]) as mock_claude,
-        patch("agent_sessions.list_codex_sessions", return_value=[
-            _make_summary("x1", RunnerType.CODEX, "2026-01-01T00:00:00Z"),
-        ]) as mock_codex,
+        patch(
+            "agent_sessions.list_codex_sessions",
+            return_value=[
+                _make_summary("x1", RunnerType.CODEX, "2026-01-01T00:00:00Z"),
+            ],
+        ) as mock_codex,
         patch("agent_sessions.list_pi_sessions", return_value=[]) as mock_pi,
     ):
         sessions = discover_sessions(runner_type=RunnerType.CODEX)

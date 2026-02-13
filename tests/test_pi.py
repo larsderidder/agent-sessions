@@ -78,9 +78,7 @@ def test_roundtrip_directory_encoding():
 def test_list_pi_sessions(monkeypatch, tmp_path: Path) -> None:
     sessions_dir = tmp_path / ".pi" / "agent" / "sessions"
     monkeypatch.setenv("PI_SESSIONS_DIR", str(sessions_dir))
-    monkeypatch.setattr(
-        "agent_sessions.providers.pi.find_running_pi_sessions", lambda: set()
-    )
+    monkeypatch.setattr("agent_sessions.providers.pi.find_running_pi_sessions", lambda: set())
 
     session_id = "d6660987-06ac-427d-b751-1232e8b88ca2"
     project_dir = sessions_dir / "--home-lars-project--"
@@ -100,9 +98,7 @@ def test_list_pi_sessions(monkeypatch, tmp_path: Path) -> None:
 def test_list_pi_sessions_filtered(monkeypatch, tmp_path: Path) -> None:
     sessions_dir = tmp_path / ".pi" / "agent" / "sessions"
     monkeypatch.setenv("PI_SESSIONS_DIR", str(sessions_dir))
-    monkeypatch.setattr(
-        "agent_sessions.providers.pi.find_running_pi_sessions", lambda: set()
-    )
+    monkeypatch.setattr("agent_sessions.providers.pi.find_running_pi_sessions", lambda: set())
 
     session_id = "aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee"
     project_dir = sessions_dir / "--home-lars-project--"
@@ -116,9 +112,7 @@ def test_list_pi_sessions_filtered(monkeypatch, tmp_path: Path) -> None:
 def test_get_pi_session_detail(monkeypatch, tmp_path: Path) -> None:
     sessions_dir = tmp_path / ".pi" / "agent" / "sessions"
     monkeypatch.setenv("PI_SESSIONS_DIR", str(sessions_dir))
-    monkeypatch.setattr(
-        "agent_sessions.providers.pi.find_running_pi_sessions", lambda: set()
-    )
+    monkeypatch.setattr("agent_sessions.providers.pi.find_running_pi_sessions", lambda: set())
 
     session_id = "d6660987-06ac-427d-b751-1232e8b88ca2"
     project_dir = sessions_dir / "--home-lars-project--"

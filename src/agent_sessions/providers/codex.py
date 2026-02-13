@@ -118,6 +118,7 @@ def _parse_session_summary(
         if last_activity is None:
             mtime = session_file.stat().st_mtime
             from datetime import datetime, timezone
+
             last_activity = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
 
         return SessionSummary(
@@ -156,7 +157,10 @@ def list_codex_sessions(
         summary = _parse_session_summary(session_file, running_sessions)
         if not summary:
             continue
-        if normalized_directory and normalize_directory_path(summary.directory) != normalized_directory:
+        if (
+            normalized_directory
+            and normalize_directory_path(summary.directory) != normalized_directory
+        ):
             continue
         sessions.append(summary)
 
@@ -254,6 +258,7 @@ def get_codex_session_detail(
         if last_activity is None:
             mtime = session_file.stat().st_mtime
             from datetime import datetime, timezone
+
             last_activity = datetime.fromtimestamp(mtime, tz=timezone.utc).isoformat()
 
         if limit and len(messages) > limit:

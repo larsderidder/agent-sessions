@@ -264,10 +264,7 @@ def _find_session_file(session_id: str) -> Path | None:
                     first_line = f.readline().strip()
                     if first_line:
                         record = json.loads(first_line)
-                        if (
-                            record.get("type") == "session"
-                            and record.get("id") == session_id
-                        ):
+                        if record.get("type") == "session" and record.get("id") == session_id:
                             return session_file
             except Exception:
                 continue
@@ -339,9 +336,7 @@ def get_pi_session_detail(
                             )
 
                     elif role == "assistant":
-                        text, thinking = _extract_assistant_content(
-                            message.get("content")
-                        )
+                        text, thinking = _extract_assistant_content(message.get("content"))
                         if text or thinking:
                             messages.append(
                                 SessionMessage(
