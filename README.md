@@ -32,6 +32,8 @@ for msg in detail.messages:
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
 
+> Looking for a ready-made solution for supervising your agents? Check out [Tether](https://github.com/larsderidder/tether).
+
 ## Install
 
 ```bash
