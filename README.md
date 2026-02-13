@@ -1,5 +1,7 @@
 # agent-sessions
 
+> Looking for a ready-made solution for supervising your agents? Check out [Tether](https://github.com/larsderidder/tether).
+
 Discover and inspect local AI coding agent sessions (Claude Code, Codex, Pi).
 
 ```python
@@ -31,8 +33,6 @@ for msg in detail.messages:
 | Pi | `~/.pi/agent/sessions/` | JSONL per session |
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
-
-> Looking for a ready-made solution for supervising your agents? Check out [Tether](https://github.com/larsderidder/tether).
 
 ## Install
 
