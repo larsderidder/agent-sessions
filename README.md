@@ -1,8 +1,8 @@
 # agent-sessions
 
-> Looking for a ready-made solution for supervising your agents? Check out [Tether](https://github.com/larsderidder/tether).
-
 Discover and inspect local AI coding agent sessions (Claude Code, Codex, Pi).
+
+> Looking for a ready-made solution for supervising your agents? Check out [Tether](https://github.com/larsderidder/tether).
 
 ```python
 from agent_sessions import discover_sessions, get_session_detail, RunnerType
