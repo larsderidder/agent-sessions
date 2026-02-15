@@ -43,7 +43,7 @@ for msg in detail.messages:
 |-------|-----------------|--------|
 | Claude Code | `~/.claude/projects/` | JSONL per session |
 | Codex | `~/.codex/sessions/` | JSONL rollout files |
-| OpenCode | `<project>/.opencode/opencode.db` | SQLite database |
+| OpenCode | `~/.local/share/opencode/opencode.db` | SQLite database |
 | Pi | `~/.pi/agent/sessions/` | JSONL per session |
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
@@ -56,10 +56,10 @@ All providers support environment variables to override default paths:
 |----------|----------|---------|
 | `CLAUDE_HOME` | Claude Code | `~/.claude` |
 | `CODEX_HOME` | Codex | `~/.codex` |
-| `OPENCODE_SEARCH_DIRS` | OpenCode | `$HOME` |
+| `XDG_DATA_HOME` | OpenCode | `~/.local/share` |
 | `PI_SESSIONS_DIR` | Pi | `~/.pi/agent/sessions` |
 
-`OPENCODE_SEARCH_DIRS` accepts a colon-separated list of directories to scan for `.opencode/opencode.db` files (up to 4 levels deep).
+OpenCode uses a centralized database at `$XDG_DATA_HOME/opencode/opencode.db` (defaults to `~/.local/share/opencode/opencode.db`).
 
 ## Status
 
