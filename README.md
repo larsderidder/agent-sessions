@@ -5,7 +5,7 @@
 [![Python 3.11+](https://img.shields.io/pypi/pyversions/agent-sessions)](https://pypi.org/project/agent-sessions/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Discover and inspect local AI coding agent sessions (Claude Code, Codex, Pi).
+Discover and inspect local AI coding agent sessions (Claude Code, Codex, OpenCode, Pi).
 
 > **Looking for a ready-made supervision tool?** Check out [Tether](https://github.com/larsderidder/tether).
 
@@ -43,9 +43,23 @@ for msg in detail.messages:
 |-------|-----------------|--------|
 | Claude Code | `~/.claude/projects/` | JSONL per session |
 | Codex | `~/.codex/sessions/` | JSONL rollout files |
+| OpenCode | `<project>/.opencode/opencode.db` | SQLite database |
 | Pi | `~/.pi/agent/sessions/` | JSONL per session |
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
+
+## Configuration
+
+All providers support environment variables to override default paths:
+
+| Variable | Provider | Default |
+|----------|----------|---------|
+| `CLAUDE_HOME` | Claude Code | `~/.claude` |
+| `CODEX_HOME` | Codex | `~/.codex` |
+| `OPENCODE_SEARCH_DIRS` | OpenCode | `$HOME` |
+| `PI_SESSIONS_DIR` | Pi | `~/.pi/agent/sessions` |
+
+`OPENCODE_SEARCH_DIRS` accepts a colon-separated list of directories to scan for `.opencode/opencode.db` files (up to 4 levels deep).
 
 ## Status
 
