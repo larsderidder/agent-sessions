@@ -101,6 +101,20 @@ def find_running_pi_sessions() -> set[str]:
     return running
 
 
+def find_running_opencode_sessions() -> set[str]:
+    """Return set of OpenCode session IDs that are currently running.
+
+    Detection method: Parse ``ps`` output for ``opencode`` processes.
+    OpenCode does not expose session IDs in the process command line,
+    so this returns an empty set.  A running OpenCode process is detected,
+    but individual session IDs cannot be determined from ``ps`` alone.
+    """
+    running: set[str] = set()
+    # OpenCode runs as a TUI application and does not embed session IDs
+    # in the command line.  We cannot map PIDs to session IDs.
+    return running
+
+
 def is_claude_session_running(session_id: str) -> bool:
     """Check if a specific Claude Code session is running."""
     return session_id in find_running_claude_sessions()
@@ -114,3 +128,8 @@ def is_codex_session_running(session_id: str) -> bool:
 def is_pi_session_running(session_id: str) -> bool:
     """Check if a specific Pi session is running."""
     return session_id in find_running_pi_sessions()
+
+
+def is_opencode_session_running(session_id: str) -> bool:
+    """Check if a specific OpenCode session is running."""
+    return session_id in find_running_opencode_sessions()

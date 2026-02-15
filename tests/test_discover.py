@@ -24,13 +24,19 @@ def test_discover_sessions_combines_providers():
         patch(
             "agent_sessions.list_claude_sessions",
             return_value=[
-                _make_summary("c1", RunnerType.CLAUDE_CODE, "2026-01-03T00:00:00Z"),
+                _make_summary("c1", RunnerType.CLAUDE_CODE, "2026-01-04T00:00:00Z"),
             ],
         ),
         patch(
             "agent_sessions.list_codex_sessions",
             return_value=[
-                _make_summary("x1", RunnerType.CODEX, "2026-01-02T00:00:00Z"),
+                _make_summary("x1", RunnerType.CODEX, "2026-01-03T00:00:00Z"),
+            ],
+        ),
+        patch(
+            "agent_sessions.list_opencode_sessions",
+            return_value=[
+                _make_summary("o1", RunnerType.OPENCODE, "2026-01-02T00:00:00Z"),
             ],
         ),
         patch(
@@ -42,9 +48,9 @@ def test_discover_sessions_combines_providers():
     ):
         sessions = discover_sessions()
 
-    assert len(sessions) == 3
+    assert len(sessions) == 4
     # Sorted by last_activity descending
-    assert [s.id for s in sessions] == ["c1", "x1", "p1"]
+    assert [s.id for s in sessions] == ["c1", "x1", "o1", "p1"]
 
 
 def test_discover_sessions_filter_by_runner_type():
@@ -56,6 +62,7 @@ def test_discover_sessions_filter_by_runner_type():
                 _make_summary("x1", RunnerType.CODEX, "2026-01-01T00:00:00Z"),
             ],
         ) as mock_codex,
+        patch("agent_sessions.list_opencode_sessions", return_value=[]) as mock_opencode,
         patch("agent_sessions.list_pi_sessions", return_value=[]) as mock_pi,
     ):
         sessions = discover_sessions(runner_type=RunnerType.CODEX)
@@ -63,8 +70,31 @@ def test_discover_sessions_filter_by_runner_type():
     assert len(sessions) == 1
     assert sessions[0].id == "x1"
     mock_claude.assert_not_called()
+    mock_opencode.assert_not_called()
     mock_pi.assert_not_called()
     mock_codex.assert_called_once()
+
+
+def test_discover_sessions_filter_by_opencode():
+    with (
+        patch("agent_sessions.list_claude_sessions", return_value=[]) as mock_claude,
+        patch("agent_sessions.list_codex_sessions", return_value=[]) as mock_codex,
+        patch(
+            "agent_sessions.list_opencode_sessions",
+            return_value=[
+                _make_summary("o1", RunnerType.OPENCODE, "2026-01-01T00:00:00Z"),
+            ],
+        ) as mock_opencode,
+        patch("agent_sessions.list_pi_sessions", return_value=[]) as mock_pi,
+    ):
+        sessions = discover_sessions(runner_type=RunnerType.OPENCODE)
+
+    assert len(sessions) == 1
+    assert sessions[0].id == "o1"
+    mock_claude.assert_not_called()
+    mock_codex.assert_not_called()
+    mock_pi.assert_not_called()
+    mock_opencode.assert_called_once()
 
 
 def test_discover_sessions_respects_limit():
@@ -75,6 +105,7 @@ def test_discover_sessions_respects_limit():
     with (
         patch("agent_sessions.list_claude_sessions", return_value=summaries),
         patch("agent_sessions.list_codex_sessions", return_value=[]),
+        patch("agent_sessions.list_opencode_sessions", return_value=[]),
         patch("agent_sessions.list_pi_sessions", return_value=[]),
     ):
         sessions = discover_sessions(limit=3)
@@ -97,6 +128,23 @@ def test_get_session_detail_routes_to_provider():
 
     assert result is detail
     mock.assert_called_once_with("c1", limit=100)
+
+
+def test_get_session_detail_routes_to_opencode():
+    detail = SessionDetail(
+        id="o1",
+        runner_type=RunnerType.OPENCODE,
+        directory="/tmp/project",
+        last_activity="2026-01-01T00:00:00Z",
+        message_count=2,
+        is_running=False,
+        messages=[SessionMessage(role="user", content="hello")],
+    )
+    with patch("agent_sessions.get_opencode_session_detail", return_value=detail) as mock:
+        result = get_session_detail("o1", RunnerType.OPENCODE)
+
+    assert result is detail
+    mock.assert_called_once_with("o1", limit=100)
 
 
 def test_get_session_detail_returns_none_for_not_found():

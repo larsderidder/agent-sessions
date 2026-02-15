@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 
 import logging
@@ -17,8 +18,21 @@ from agent_sessions.models import (
 
 logger = logging.getLogger(__name__)
 
-CLAUDE_HOME = Path.home() / ".claude"
-PROJECTS_DIR = CLAUDE_HOME / "projects"
+
+def _claude_home() -> Path:
+    """Resolve the Claude home directory.
+
+    Uses the ``CLAUDE_HOME`` environment variable if set, otherwise
+    defaults to ``~/.claude``.
+    """
+    value = os.environ.get("CLAUDE_HOME")
+    if value:
+        return Path(value).expanduser()
+    return Path.home() / ".claude"
+
+
+def _projects_dir() -> Path:
+    return _claude_home() / "projects"
 
 
 def encode_project_path(path: str) -> str:
@@ -70,10 +84,10 @@ def _extract_user_prompt(content: str | list | None) -> str | None:
 
 def _find_session_file(session_id: str) -> Path | None:
     """Find the JSONL file for a session by scanning all projects."""
-    if not PROJECTS_DIR.exists():
+    if not _projects_dir().exists():
         return None
 
-    for project_dir in PROJECTS_DIR.iterdir():
+    for project_dir in _projects_dir().iterdir():
         if not project_dir.is_dir():
             continue
         session_file = project_dir / f"{session_id}.jsonl"
@@ -185,7 +199,7 @@ def list_claude_sessions(
     Returns:
         List of session summaries sorted by last_activity descending.
     """
-    if not PROJECTS_DIR.exists():
+    if not _projects_dir().exists():
         return []
 
     running_sessions = find_running_claude_sessions()
@@ -194,9 +208,9 @@ def list_claude_sessions(
     # Determine which project directories to scan
     if directory:
         encoded = encode_project_path(directory)
-        project_dirs = [PROJECTS_DIR / encoded]
+        project_dirs = [_projects_dir() / encoded]
     else:
-        project_dirs = [d for d in PROJECTS_DIR.iterdir() if d.is_dir()]
+        project_dirs = [d for d in _projects_dir().iterdir() if d.is_dir()]
 
     for project_dir in project_dirs:
         if not project_dir.exists():

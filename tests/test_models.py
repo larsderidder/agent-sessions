@@ -7,6 +7,7 @@ def test_runner_type_values():
     assert RunnerType.CLAUDE_CODE.value == "claude_code"
     assert RunnerType.CODEX.value == "codex"
     assert RunnerType.PI.value == "pi"
+    assert RunnerType.OPENCODE.value == "opencode"
 
 
 def test_session_summary():

@@ -14,6 +14,10 @@ from agent_sessions.providers.codex import (
     list_codex_sessions,
     get_codex_session_detail,
 )
+from agent_sessions.providers.opencode import (
+    list_opencode_sessions,
+    get_opencode_session_detail,
+)
 from agent_sessions.providers.pi import (
     list_pi_sessions,
     get_pi_session_detail,
@@ -21,6 +25,7 @@ from agent_sessions.providers.pi import (
 from agent_sessions.running import (
     is_claude_session_running,
     is_codex_session_running,
+    is_opencode_session_running,
     is_pi_session_running,
 )
 
@@ -30,7 +35,7 @@ def discover_sessions(
     runner_type: RunnerType | None = None,
     limit: int = 50,
 ) -> list[SessionSummary]:
-    """Discover agent sessions from Claude Code, Codex, and Pi.
+    """Discover agent sessions from Claude Code, Codex, OpenCode, and Pi.
 
     Scans the local machine for recent and running agent sessions.
 
@@ -48,6 +53,8 @@ def discover_sessions(
         sessions.extend(list_claude_sessions(directory=directory, limit=limit))
     if runner_type is None or runner_type == RunnerType.CODEX:
         sessions.extend(list_codex_sessions(directory=directory, limit=limit))
+    if runner_type is None or runner_type == RunnerType.OPENCODE:
+        sessions.extend(list_opencode_sessions(directory=directory, limit=limit))
     if runner_type is None or runner_type == RunnerType.PI:
         sessions.extend(list_pi_sessions(directory=directory, limit=limit))
 
@@ -74,6 +81,8 @@ def get_session_detail(
         return get_claude_session_detail(session_id, limit=limit)
     if runner_type == RunnerType.CODEX:
         return get_codex_session_detail(session_id, limit=limit)
+    if runner_type == RunnerType.OPENCODE:
+        return get_opencode_session_detail(session_id, limit=limit)
     if runner_type == RunnerType.PI:
         return get_pi_session_detail(session_id, limit=limit)
     return None
@@ -93,10 +102,13 @@ __all__ = [
     "get_claude_session_detail",
     "list_codex_sessions",
     "get_codex_session_detail",
+    "list_opencode_sessions",
+    "get_opencode_session_detail",
     "list_pi_sessions",
     "get_pi_session_detail",
     # Process detection
     "is_claude_session_running",
     "is_codex_session_running",
+    "is_opencode_session_running",
     "is_pi_session_running",
 ]

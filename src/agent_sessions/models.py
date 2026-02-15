@@ -13,6 +13,7 @@ class RunnerType(str, Enum):
     CLAUDE_CODE = "claude_code"
     CODEX = "codex"
     PI = "pi"
+    OPENCODE = "opencode"
 
 
 class SessionMessage(BaseModel):

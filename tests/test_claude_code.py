@@ -83,8 +83,12 @@ def test_roundtrip():
 
 
 def test_list_claude_sessions(monkeypatch, tmp_path: Path) -> None:
-    projects_dir = tmp_path / "projects"
-    monkeypatch.setattr("agent_sessions.providers.claude_code.PROJECTS_DIR", projects_dir)
+    claude_home = tmp_path / ".claude"
+    monkeypatch.setenv("CLAUDE_HOME", str(claude_home))
+    monkeypatch.setattr(
+        "agent_sessions.providers.claude_code.find_running_claude_sessions", lambda: set()
+    )
+    projects_dir = claude_home / "projects"
 
     session_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     project_dir = projects_dir / encode_project_path("/home/lars/myproject")
@@ -100,8 +104,12 @@ def test_list_claude_sessions(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_get_claude_session_detail(monkeypatch, tmp_path: Path) -> None:
-    projects_dir = tmp_path / "projects"
-    monkeypatch.setattr("agent_sessions.providers.claude_code.PROJECTS_DIR", projects_dir)
+    claude_home = tmp_path / ".claude"
+    monkeypatch.setenv("CLAUDE_HOME", str(claude_home))
+    monkeypatch.setattr(
+        "agent_sessions.providers.claude_code.find_running_claude_sessions", lambda: set()
+    )
+    projects_dir = claude_home / "projects"
 
     session_id = "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
     project_dir = projects_dir / encode_project_path("/home/lars/myproject")
@@ -117,7 +125,5 @@ def test_get_claude_session_detail(monkeypatch, tmp_path: Path) -> None:
 
 
 def test_list_claude_sessions_empty(monkeypatch, tmp_path: Path) -> None:
-    monkeypatch.setattr(
-        "agent_sessions.providers.claude_code.PROJECTS_DIR", tmp_path / "nonexistent"
-    )
+    monkeypatch.setenv("CLAUDE_HOME", str(tmp_path / "nonexistent"))
     assert list_claude_sessions() == []
