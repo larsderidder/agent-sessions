@@ -240,6 +240,81 @@ def list_pi_sessions(
     return sessions[:limit]
 
 
+def get_pi_session_model(session_file: Path) -> tuple[str, str] | None:
+    """Extract the active model from a pi session file.
+
+    Reads the JSONL tree and walks from the leaf entry back to the root,
+    returning the last model_change or assistant-message model encountered.
+    Also checks the model recorded on the most recent assistant message.
+
+    Returns:
+        (provider, model_id) tuple, or None if no model is recorded.
+    """
+    try:
+        entries: list[dict] = []
+        with open(session_file, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.strip()
+                if not line:
+                    continue
+                try:
+                    entries.append(json.loads(line))
+                except json.JSONDecodeError:
+                    continue
+
+        if not entries:
+            return None
+
+        # Build index by entry id (skip session header)
+        by_id: dict[str, dict] = {}
+        leaf_id: str | None = None
+        for entry in entries:
+            eid = entry.get("id")
+            if eid and entry.get("type") != "session":
+                by_id[eid] = entry
+                leaf_id = eid
+
+        if leaf_id is None:
+            return None
+
+        # Walk from leaf to root, collecting path
+        path: list[dict] = []
+        current: dict | None = by_id.get(leaf_id)
+        while current:
+            path.insert(0, current)
+            parent_id = current.get("parentId")
+            current = by_id.get(parent_id) if parent_id else None
+
+        # Traverse path root-to-leaf, last model_change wins
+        provider: str | None = None
+        model_id: str | None = None
+        for entry in path:
+            etype = entry.get("type")
+            if etype == "model_change":
+                provider = entry.get("provider")
+                model_id = entry.get("modelId")
+            elif etype == "message":
+                msg = entry.get("message", {})
+                if msg.get("role") == "assistant":
+                    p = msg.get("provider")
+                    m = msg.get("model")
+                    if p and m:
+                        provider = p
+                        model_id = m
+
+        if provider and model_id:
+            return (provider, model_id)
+        return None
+
+    except Exception as e:
+        logger.debug(
+            "Failed to read model from pi session file",
+            session_file=str(session_file),
+            error=str(e),
+        )
+        return None
+
+
 def _find_session_file(session_id: str) -> Path | None:
     """Find a pi session file by session ID."""
     sessions_root = _pi_sessions_dir()
