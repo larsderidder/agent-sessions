@@ -42,11 +42,14 @@ for msg in detail.messages:
 | Agent | Session location | Format |
 |-------|-----------------|--------|
 | Claude Code | `~/.claude/projects/` | JSONL per session |
-| Codex | `~/.codex/sessions/` | JSONL rollout files |
+| Codex | `~/.codex/sessions/` plus `~/.codex/state_*.sqlite` | JSONL rollout files plus SQLite thread metadata |
 | OpenCode | `~/.local/share/opencode/opencode.db` | SQLite database |
 | Pi | `~/.pi/agent/sessions/` | JSONL per session |
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
+
+For Codex, discovery falls back to the SQLite `threads` table when a session has
+been created in `state_*.sqlite` but the rollout file has not been flushed yet.
 
 ## Configuration
 

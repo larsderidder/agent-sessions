@@ -2,10 +2,14 @@
 
 from __future__ import annotations
 
+from dataclasses import dataclass
+from datetime import datetime
+from datetime import timezone
 import json
 import os
 import re
 from pathlib import Path
+import sqlite3
 
 import logging
 
@@ -23,6 +27,19 @@ logger = logging.getLogger(__name__)
 _ROLLOUT_ID_RE = re.compile(r"rollout-.*-([0-9a-fA-F-]{32,})\.jsonl$")
 
 
+@dataclass(frozen=True)
+class _SqliteThreadRecord:
+    """Minimal Codex thread metadata available before rollout files exist."""
+
+    session_id: str
+    rollout_path: Path | None
+    created_at: int | None
+    updated_at: int | None
+    directory: str
+    title: str | None
+    first_user_message: str | None
+
+
 def _codex_home() -> Path:
     """Resolve CODEX_HOME, defaulting to ~/.codex."""
     value = os.environ.get("CODEX_HOME")
@@ -33,6 +50,136 @@ def _codex_home() -> Path:
 
 def _sessions_dir() -> Path:
     return _codex_home() / "sessions"
+
+
+def _state_db_paths() -> tuple[Path, ...]:
+    """Return readable Codex state databases ordered newest first."""
+    home = _codex_home()
+    candidates = sorted(
+        (path for path in home.glob("state_*.sqlite") if path.is_file()),
+        key=lambda path: path.stat().st_mtime,
+        reverse=True,
+    )
+    return tuple(candidates)
+
+
+def _sqlite_timestamp(value: object) -> str | None:
+    """Convert a sqlite epoch value into an ISO timestamp."""
+    if value is None:
+        return None
+    try:
+        seconds = int(value)
+    except (TypeError, ValueError):
+        return None
+    return datetime.fromtimestamp(seconds, tz=timezone.utc).isoformat()
+
+
+def _sqlite_thread_records() -> list[_SqliteThreadRecord]:
+    """Load Codex thread metadata from sqlite state databases."""
+    records_by_id: dict[str, _SqliteThreadRecord] = {}
+
+    for db_path in _state_db_paths():
+        try:
+            with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as conn:
+                conn.row_factory = sqlite3.Row
+                rows = conn.execute(
+                    """
+                    SELECT
+                        id,
+                        rollout_path,
+                        created_at,
+                        updated_at,
+                        cwd,
+                        title,
+                        first_user_message
+                    FROM threads
+                    """
+                )
+                for row in rows:
+                    session_id = row["id"]
+                    directory = row["cwd"]
+                    if not isinstance(session_id, str) or not isinstance(directory, str):
+                        continue
+
+                    rollout_path = row["rollout_path"]
+                    record = _SqliteThreadRecord(
+                        session_id=session_id,
+                        rollout_path=Path(rollout_path) if isinstance(rollout_path, str) and rollout_path else None,
+                        created_at=int(row["created_at"]) if row["created_at"] is not None else None,
+                        updated_at=int(row["updated_at"]) if row["updated_at"] is not None else None,
+                        directory=directory,
+                        title=row["title"] if isinstance(row["title"], str) else None,
+                        first_user_message=(
+                            row["first_user_message"]
+                            if isinstance(row["first_user_message"], str)
+                            else None
+                        ),
+                    )
+                    current = records_by_id.get(record.session_id)
+                    if current is None or (record.updated_at or 0) >= (current.updated_at or 0):
+                        records_by_id[record.session_id] = record
+        except sqlite3.Error as exc:
+            logger.warning(
+                "Failed to read Codex sqlite state database",
+                db_path=str(db_path),
+                error=str(exc),
+            )
+
+    return sorted(
+        records_by_id.values(),
+        key=lambda record: record.updated_at or record.created_at or 0,
+        reverse=True,
+    )
+
+
+def _build_sqlite_summary(
+    record: _SqliteThreadRecord,
+    running_sessions: set[str],
+) -> SessionSummary:
+    prompt = (record.first_user_message or "").strip() or (record.title or "").strip() or None
+    last_activity = (
+        _sqlite_timestamp(record.updated_at)
+        or _sqlite_timestamp(record.created_at)
+        or datetime.now(tz=timezone.utc).isoformat()
+    )
+    message_count = 1 if record.first_user_message else 0
+    return SessionSummary(
+        id=record.session_id,
+        runner_type=RunnerType.CODEX,
+        directory=record.directory,
+        first_prompt=prompt,
+        last_prompt=prompt,
+        last_activity=last_activity,
+        message_count=message_count,
+        is_running=record.session_id in running_sessions,
+    )
+
+
+def _build_sqlite_detail(
+    record: _SqliteThreadRecord,
+    running_sessions: set[str],
+) -> SessionDetail:
+    summary = _build_sqlite_summary(record, running_sessions)
+    messages: list[SessionMessage] = []
+    if record.first_user_message:
+        messages.append(
+            SessionMessage(
+                role="user",
+                content=record.first_user_message,
+                timestamp=_sqlite_timestamp(record.created_at),
+            )
+        )
+    return SessionDetail(
+        id=summary.id,
+        runner_type=summary.runner_type,
+        directory=summary.directory,
+        first_prompt=summary.first_prompt,
+        last_prompt=summary.last_prompt,
+        last_activity=summary.last_activity,
+        message_count=len(messages),
+        is_running=summary.is_running,
+        messages=messages,
+    )
 
 
 def _extract_text(content: object) -> str:
@@ -144,26 +291,36 @@ def list_codex_sessions(
     directory: str | None = None,
     limit: int = 50,
 ) -> list[SessionSummary]:
-    """Discover Codex sessions stored under ~/.codex/sessions."""
+    """Discover Codex sessions stored under ~/.codex/sessions and sqlite state."""
     sessions_root = _sessions_dir()
-    if not sessions_root.exists():
-        return []
 
     normalized_directory = normalize_directory_path(directory) if directory else None
     running_sessions = find_running_codex_sessions()
-    sessions: list[SessionSummary] = []
+    sessions_by_id: dict[str, SessionSummary] = {}
 
-    for session_file in sessions_root.rglob("rollout-*.jsonl"):
-        summary = _parse_session_summary(session_file, running_sessions)
-        if not summary:
-            continue
-        if (
-            normalized_directory
-            and normalize_directory_path(summary.directory) != normalized_directory
-        ):
-            continue
-        sessions.append(summary)
+    if sessions_root.exists():
+        for session_file in sessions_root.rglob("rollout-*.jsonl"):
+            summary = _parse_session_summary(session_file, running_sessions)
+            if not summary:
+                continue
+            if (
+                normalized_directory
+                and normalize_directory_path(summary.directory) != normalized_directory
+            ):
+                continue
+            sessions_by_id[summary.id] = summary
 
+    for record in _sqlite_thread_records():
+        if normalized_directory and normalize_directory_path(record.directory) != normalized_directory:
+            continue
+        existing = sessions_by_id.get(record.session_id)
+        if existing is None:
+            sessions_by_id[record.session_id] = _build_sqlite_summary(record, running_sessions)
+            continue
+        if not existing.is_running and record.session_id in running_sessions:
+            existing.is_running = True
+
+    sessions = list(sessions_by_id.values())
     sessions.sort(key=lambda s: s.last_activity, reverse=True)
     return sessions[:limit]
 
@@ -176,6 +333,12 @@ def _find_session_file(session_id: str) -> Path | None:
     for session_file in sessions_root.rglob(f"*{session_id}.jsonl"):
         if session_file.is_file():
             return session_file
+
+    for record in _sqlite_thread_records():
+        if record.session_id != session_id or record.rollout_path is None:
+            continue
+        if record.rollout_path.is_file():
+            return record.rollout_path
 
     # Fallback: scan for matching session_meta ID
     for session_file in sessions_root.rglob("rollout-*.jsonl"):
@@ -198,10 +361,13 @@ def get_codex_session_detail(
     limit: int = 100,
 ) -> SessionDetail | None:
     session_file = _find_session_file(session_id)
+    running_sessions = find_running_codex_sessions()
     if not session_file:
+        for record in _sqlite_thread_records():
+            if record.session_id == session_id:
+                return _build_sqlite_detail(record, running_sessions)
         return None
 
-    running_sessions = find_running_codex_sessions()
     first_prompt: str | None = None
     last_prompt: str | None = None
     last_activity: str | None = None
