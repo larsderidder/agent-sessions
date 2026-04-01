@@ -1,0 +1,61 @@
+name: Release Candidate Packages
+
+on:
+  release:
+    types: [prereleased]
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: "Release tag to package (for formula URLs)"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  package-rc:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools
+        run: python -m pip install --upgrade build
+
+      - name: Build wheel
+        run: python -m build
+
+      - name: Build RC assets
+        env:
+          RELEASE_TAG: ${{ github.event.release.tag_name || inputs.release_tag }}
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          python scripts/build_rc_assets.py \
+            --dist-dir dist \
+            --output-dir dist-rc \
+            --package-name agent-sessions-rc \
+            --project-name agent-sessions \
+            --display-name "agent-sessions" \
+            --homepage "https://github.com/larsderidder/agent-sessions" \
+            --release-tag "$RELEASE_TAG" \
+            --repo-owner "$REPO_OWNER" \
+            --repo-name "$REPO_NAME" \
+            --primary-command agent-sessions=agent-sessions-rc
+
+      - name: Upload workflow artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: agent-sessions-rc-assets
+          path: dist-rc/*
+
+      - name: Upload release assets
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: dist-rc/*

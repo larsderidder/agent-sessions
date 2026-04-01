@@ -41,6 +41,9 @@ Homepage = "https://github.com/larsderidder/agent-sessions"
 Repository = "https://github.com/larsderidder/agent-sessions"
 Issues = "https://github.com/larsderidder/agent-sessions/issues"
 
+[project.scripts]
+agent-sessions = "agent_sessions.cli:main"
+
 [tool.hatch.build.targets.wheel]
 packages = ["src/agent_sessions"]
 

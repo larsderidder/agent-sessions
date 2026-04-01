@@ -37,6 +37,29 @@ for msg in detail.messages:
     print(f"[{msg.role}] {msg.content[:80]}")
 ```
 
+CLI:
+
+```bash
+agent-sessions list --runner-type codex
+agent-sessions show <session-id> --runner-type codex --json
+```
+
+Release-candidate packaging:
+
+```bash
+python scripts/build_rc_assets.py \
+  --dist-dir dist \
+  --output-dir dist-rc \
+  --package-name agent-sessions-rc \
+  --project-name agent-sessions \
+  --display-name "agent-sessions" \
+  --homepage https://github.com/larsderidder/agent-sessions \
+  --release-tag v0.2.1-rc1 \
+  --repo-owner Adminrealagi \
+  --repo-name agent-sessions \
+  --primary-command agent-sessions=agent-sessions-rc
+```
+
 ## Supported agents
 
 | Agent | Session location | Format |
