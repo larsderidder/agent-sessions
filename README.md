@@ -37,16 +37,42 @@ for msg in detail.messages:
     print(f"[{msg.role}] {msg.content[:80]}")
 ```
 
+CLI:
+
+```bash
+agent-sessions list --runner-type codex
+agent-sessions show <session-id> --runner-type codex --json
+```
+
+Release packaging:
+
+```bash
+python scripts/build_release_assets.py \
+  --dist-dir dist \
+  --output-dir dist-release \
+  --package-name agent-sessions \
+  --project-name agent-sessions \
+  --display-name "agent-sessions" \
+  --homepage https://github.com/larsderidder/agent-sessions \
+  --release-tag v0.2.1 \
+  --repo-owner Adminrealagi \
+  --repo-name agent-sessions \
+  --primary-command agent-sessions=agent-sessions
+```
+
 ## Supported agents
 
 | Agent | Session location | Format |
 |-------|-----------------|--------|
 | Claude Code | `~/.claude/projects/` | JSONL per session |
-| Codex | `~/.codex/sessions/` | JSONL rollout files |
+| Codex | `~/.codex/sessions/` plus `~/.codex/state_*.sqlite` | JSONL rollout files plus SQLite thread metadata |
 | OpenCode | `~/.local/share/opencode/opencode.db` | SQLite database |
 | Pi | `~/.pi/agent/sessions/` | JSONL per session |
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
+
+For Codex, discovery falls back to the SQLite `threads` table when a session has
+been created in `state_*.sqlite` but the rollout file has not been flushed yet.
 
 ## Configuration
 
