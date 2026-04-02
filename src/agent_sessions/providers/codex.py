@@ -82,8 +82,7 @@ def _sqlite_thread_records() -> list[_SqliteThreadRecord]:
         try:
             with sqlite3.connect(f"file:{db_path}?mode=ro", uri=True) as conn:
                 conn.row_factory = sqlite3.Row
-                rows = conn.execute(
-                    """
+                rows = conn.execute("""
                     SELECT
                         id,
                         rollout_path,
@@ -93,8 +92,7 @@ def _sqlite_thread_records() -> list[_SqliteThreadRecord]:
                         title,
                         first_user_message
                     FROM threads
-                    """
-                )
+                    """)
                 for row in rows:
                     session_id = row["id"]
                     directory = row["cwd"]
@@ -104,9 +102,17 @@ def _sqlite_thread_records() -> list[_SqliteThreadRecord]:
                     rollout_path = row["rollout_path"]
                     record = _SqliteThreadRecord(
                         session_id=session_id,
-                        rollout_path=Path(rollout_path) if isinstance(rollout_path, str) and rollout_path else None,
-                        created_at=int(row["created_at"]) if row["created_at"] is not None else None,
-                        updated_at=int(row["updated_at"]) if row["updated_at"] is not None else None,
+                        rollout_path=(
+                            Path(rollout_path)
+                            if isinstance(rollout_path, str) and rollout_path
+                            else None
+                        ),
+                        created_at=(
+                            int(row["created_at"]) if row["created_at"] is not None else None
+                        ),
+                        updated_at=(
+                            int(row["updated_at"]) if row["updated_at"] is not None else None
+                        ),
                         directory=directory,
                         title=row["title"] if isinstance(row["title"], str) else None,
                         first_user_message=(
@@ -311,7 +317,10 @@ def list_codex_sessions(
             sessions_by_id[summary.id] = summary
 
     for record in _sqlite_thread_records():
-        if normalized_directory and normalize_directory_path(record.directory) != normalized_directory:
+        if (
+            normalized_directory
+            and normalize_directory_path(record.directory) != normalized_directory
+        ):
             continue
         existing = sessions_by_id.get(record.session_id)
         if existing is None:

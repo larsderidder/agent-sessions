@@ -54,8 +54,7 @@ def _write_sqlite_thread(
 ) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     with sqlite3.connect(path) as conn:
-        conn.execute(
-            """
+        conn.execute("""
             CREATE TABLE threads (
                 id TEXT PRIMARY KEY,
                 rollout_path TEXT NOT NULL,
@@ -65,8 +64,7 @@ def _write_sqlite_thread(
                 title TEXT NOT NULL,
                 first_user_message TEXT NOT NULL
             )
-            """
-        )
+            """)
         conn.execute(
             """
             INSERT INTO threads (id, rollout_path, created_at, updated_at, cwd, title, first_user_message)

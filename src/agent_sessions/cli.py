@@ -15,9 +15,7 @@ def _runner_type(value: str) -> RunnerType:
     try:
         return RunnerType(value)
     except ValueError as exc:
-        raise argparse.ArgumentTypeError(
-            f"invalid runner type: {value}"
-        ) from exc
+        raise argparse.ArgumentTypeError(f"invalid runner type: {value}") from exc
 
 
 def _summary_to_dict(summary: SessionSummary) -> dict[str, object]:
