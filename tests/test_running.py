@@ -8,9 +8,15 @@ import subprocess
 from agent_sessions.running import (
     find_running_claude_sessions,
     find_running_codex_sessions,
+    find_running_cordless_sessions,
+    find_running_discordo_sessions,
+    find_running_endcord_sessions,
     find_running_pi_sessions,
     is_claude_session_running,
     is_codex_session_running,
+    is_cordless_session_running,
+    is_discordo_session_running,
+    is_endcord_session_running,
     is_pi_session_running,
 )
 
@@ -72,3 +78,12 @@ def test_subprocess_timeout_returns_empty():
         assert find_running_claude_sessions() == set()
         assert find_running_codex_sessions() == set()
         assert find_running_pi_sessions() == set()
+
+
+def test_discord_tui_running_detectors_are_safe_stubs():
+    assert find_running_discordo_sessions() == set()
+    assert find_running_endcord_sessions() == set()
+    assert find_running_cordless_sessions() == set()
+    assert is_discordo_session_running("discordo-session") is False
+    assert is_endcord_session_running("endcord-session") is False
+    assert is_cordless_session_running("cordless-session") is False

@@ -18,6 +18,18 @@ from agent_sessions.providers.opencode import (
     list_opencode_sessions,
     get_opencode_session_detail,
 )
+from agent_sessions.providers.discordo import (
+    list_discordo_sessions,
+    get_discordo_session_detail,
+)
+from agent_sessions.providers.endcord import (
+    list_endcord_sessions,
+    get_endcord_session_detail,
+)
+from agent_sessions.providers.cordless import (
+    list_cordless_sessions,
+    get_cordless_session_detail,
+)
 from agent_sessions.providers.pi import (
     list_pi_sessions,
     get_pi_session_detail,
@@ -25,6 +37,9 @@ from agent_sessions.providers.pi import (
 from agent_sessions.running import (
     is_claude_session_running,
     is_codex_session_running,
+    is_cordless_session_running,
+    is_discordo_session_running,
+    is_endcord_session_running,
     is_opencode_session_running,
     is_pi_session_running,
 )
@@ -35,7 +50,7 @@ def discover_sessions(
     runner_type: RunnerType | None = None,
     limit: int = 50,
 ) -> list[SessionSummary]:
-    """Discover agent sessions from Claude Code, Codex, OpenCode, and Pi.
+    """Discover agent sessions from all supported providers.
 
     Scans the local machine for recent and running agent sessions.
 
@@ -55,6 +70,12 @@ def discover_sessions(
         sessions.extend(list_codex_sessions(directory=directory, limit=limit))
     if runner_type is None or runner_type == RunnerType.OPENCODE:
         sessions.extend(list_opencode_sessions(directory=directory, limit=limit))
+    if runner_type is None or runner_type == RunnerType.DISCORDO:
+        sessions.extend(list_discordo_sessions(directory=directory, limit=limit))
+    if runner_type is None or runner_type == RunnerType.ENDCORD:
+        sessions.extend(list_endcord_sessions(directory=directory, limit=limit))
+    if runner_type is None or runner_type == RunnerType.CORDLESS:
+        sessions.extend(list_cordless_sessions(directory=directory, limit=limit))
     if runner_type is None or runner_type == RunnerType.PI:
         sessions.extend(list_pi_sessions(directory=directory, limit=limit))
 
@@ -83,6 +104,12 @@ def get_session_detail(
         return get_codex_session_detail(session_id, limit=limit)
     if runner_type == RunnerType.OPENCODE:
         return get_opencode_session_detail(session_id, limit=limit)
+    if runner_type == RunnerType.DISCORDO:
+        return get_discordo_session_detail(session_id, limit=limit)
+    if runner_type == RunnerType.ENDCORD:
+        return get_endcord_session_detail(session_id, limit=limit)
+    if runner_type == RunnerType.CORDLESS:
+        return get_cordless_session_detail(session_id, limit=limit)
     if runner_type == RunnerType.PI:
         return get_pi_session_detail(session_id, limit=limit)
     return None
@@ -104,11 +131,20 @@ __all__ = [
     "get_codex_session_detail",
     "list_opencode_sessions",
     "get_opencode_session_detail",
+    "list_discordo_sessions",
+    "get_discordo_session_detail",
+    "list_endcord_sessions",
+    "get_endcord_session_detail",
+    "list_cordless_sessions",
+    "get_cordless_session_detail",
     "list_pi_sessions",
     "get_pi_session_detail",
     # Process detection
     "is_claude_session_running",
     "is_codex_session_running",
+    "is_discordo_session_running",
+    "is_endcord_session_running",
+    "is_cordless_session_running",
     "is_opencode_session_running",
     "is_pi_session_running",
 ]

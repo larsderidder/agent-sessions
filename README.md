@@ -5,7 +5,7 @@
 [![Python 3.11+](https://img.shields.io/pypi/pyversions/agent-sessions)](https://pypi.org/project/agent-sessions/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Discover and inspect local AI coding agent sessions (Claude Code, Codex, OpenCode, Pi).
+Discover and inspect local agent sessions (Claude Code, Codex, OpenCode, Pi, and experimental Discord TUI clients).
 
 > **Looking for a ready-made supervision tool?** Check out [Tether](https://github.com/larsderidder/tether).
 
@@ -45,9 +45,18 @@ for msg in detail.messages:
 | Codex | `~/.codex/sessions/` | JSONL rollout files |
 | OpenCode | `~/.local/share/opencode/opencode.db` | SQLite database |
 | Pi | `~/.pi/agent/sessions/` | JSONL per session |
+| discordo | Not implemented yet | Experimental first-class stub |
+| endcord | Not implemented yet | Experimental first-class stub |
+| cordless | Not implemented yet | Experimental first-class stub |
 
 Each provider also detects whether sessions are currently running by inspecting the process table.
 
+The Discord TUI clients are currently first-class runner types in the API,
+but session discovery and detail parsing are not implemented yet. They return empty
+discovery results and `None` for detail lookup until real storage integration lands.
+
+For Codex, discovery falls back to the SQLite `threads` table when a session has
+been created in `state_*.sqlite` but the rollout file has not been flushed yet.
 ## Configuration
 
 All providers support environment variables to override default paths:
