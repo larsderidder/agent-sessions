@@ -1,22 +1,38 @@
 #!/usr/bin/env python3
-"""Build release-candidate assets for .deb and Homebrew installs."""
+"""Build release assets for .deb and Homebrew installs."""
 
 from __future__ import annotations
 
 import argparse
 import hashlib
 import os
-from pathlib import Path
 import re
 import shutil
 import subprocess
 import tarfile
 import tempfile
-
+from pathlib import Path
 
 WHEEL_RE = re.compile(
     r"^(?P<dist>.+)-(?P<version>[^-]+)-[^-]+-[^-]+-[^-]+\.whl$"
 )
+
+
+def release_tag_to_python_version(release_tag: str) -> str:
+    return release_tag.lstrip("v").replace("-rc", "rc")
+
+
+def validate_release_tag_matches_package_version(
+    release_tag: str,
+    package_version: str,
+) -> None:
+    expected_version = release_tag_to_python_version(release_tag)
+    if expected_version != package_version:
+        raise SystemExit(
+            "release tag/version mismatch: "
+            f"tag {release_tag!r} expects wheel version {expected_version!r}, "
+            f"found {package_version!r}"
+        )
 
 
 def run(cmd: list[str], *, cwd: Path | None = None) -> None:
@@ -96,8 +112,8 @@ def create_deb(
                 "Architecture: all",
                 "Maintainer: Codex <codex@example.invalid>",
                 "Depends: bash, python3, python3-venv",
-                f"Description: {display_name} release candidate package",
-                f" {display_name} packaged as a self-contained RC install.",
+                f"Description: {display_name} self-contained package",
+                f" {display_name} packaged as a self-contained install.",
                 "",
             ]
         )
@@ -182,7 +198,7 @@ def create_formula(
         [
             "class " + class_name + " < Formula",
             '  include Language::Python::Virtualenv',
-            f'  desc "{display_name} release candidate"',
+            f'  desc "{display_name} self-contained package"',
             f'  homepage "{homepage}"',
             f'  url "{wheelhouse_asset_url}"',
             f'  sha256 "{wheelhouse_sha256}"',
@@ -247,6 +263,7 @@ def main() -> int:
         raise SystemExit(f"no wheel files found in {args.dist_dir}")
     primary_wheel = wheels[0]
     _, package_version = parse_wheel_metadata(primary_wheel)
+    validate_release_tag_matches_package_version(args.release_tag, package_version)
     command_aliases: dict[str, str] = {}
     for item in args.primary_command:
         src, sep, dst = item.partition("=")

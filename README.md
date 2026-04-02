@@ -44,20 +44,20 @@ agent-sessions list --runner-type codex
 agent-sessions show <session-id> --runner-type codex --json
 ```
 
-Release-candidate packaging:
+Release packaging:
 
 ```bash
-python scripts/build_rc_assets.py \
+python scripts/build_release_assets.py \
   --dist-dir dist \
-  --output-dir dist-rc \
-  --package-name agent-sessions-rc \
+  --output-dir dist-release \
+  --package-name agent-sessions \
   --project-name agent-sessions \
   --display-name "agent-sessions" \
   --homepage https://github.com/larsderidder/agent-sessions \
-  --release-tag v0.2.1-rc1 \
+  --release-tag v0.2.1 \
   --repo-owner Adminrealagi \
   --repo-name agent-sessions \
-  --primary-command agent-sessions=agent-sessions-rc
+  --primary-command agent-sessions=agent-sessions
 ```
 
 ## Supported agents
