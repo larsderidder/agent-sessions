@@ -8,6 +8,9 @@ def test_runner_type_values():
     assert RunnerType.CODEX.value == "codex"
     assert RunnerType.PI.value == "pi"
     assert RunnerType.OPENCODE.value == "opencode"
+    assert RunnerType.DISCORDO.value == "discordo"
+    assert RunnerType.ENDCORD.value == "endcord"
+    assert RunnerType.CORDLESS.value == "cordless"
 
 
 def test_session_summary():

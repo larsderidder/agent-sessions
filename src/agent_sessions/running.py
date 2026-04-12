@@ -115,6 +115,35 @@ def find_running_opencode_sessions() -> set[str]:
     return running
 
 
+def find_running_discordo_sessions() -> set[str]:
+    """Return set of discordo session IDs that are currently running.
+
+    discordo is a terminal Discord client, but its process list output does not
+    expose stable session identifiers that can be mapped back to local session
+    storage.  Until session discovery is implemented, this safely returns an
+    empty set.
+    """
+    return set()
+
+
+def find_running_endcord_sessions() -> set[str]:
+    """Return set of endcord session IDs that are currently running.
+
+    endcord does not expose stable session IDs in ``ps`` output, so this
+    currently returns an empty set.
+    """
+    return set()
+
+
+def find_running_cordless_sessions() -> set[str]:
+    """Return set of cordless session IDs that are currently running.
+
+    cordless does not expose stable session IDs in ``ps`` output, so this
+    currently returns an empty set.
+    """
+    return set()
+
+
 def is_claude_session_running(session_id: str) -> bool:
     """Check if a specific Claude Code session is running."""
     return session_id in find_running_claude_sessions()
@@ -133,3 +162,18 @@ def is_pi_session_running(session_id: str) -> bool:
 def is_opencode_session_running(session_id: str) -> bool:
     """Check if a specific OpenCode session is running."""
     return session_id in find_running_opencode_sessions()
+
+
+def is_discordo_session_running(session_id: str) -> bool:
+    """Check if a specific discordo session is running."""
+    return session_id in find_running_discordo_sessions()
+
+
+def is_endcord_session_running(session_id: str) -> bool:
+    """Check if a specific endcord session is running."""
+    return session_id in find_running_endcord_sessions()
+
+
+def is_cordless_session_running(session_id: str) -> bool:
+    """Check if a specific cordless session is running."""
+    return session_id in find_running_cordless_sessions()

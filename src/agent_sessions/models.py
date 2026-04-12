@@ -14,6 +14,9 @@ class RunnerType(str, Enum):
     CODEX = "codex"
     PI = "pi"
     OPENCODE = "opencode"
+    DISCORDO = "discordo"
+    ENDCORD = "endcord"
+    CORDLESS = "cordless"
 
 
 class SessionMessage(BaseModel):

@@ -147,6 +147,68 @@ def test_get_session_detail_routes_to_opencode():
     mock.assert_called_once_with("o1", limit=100)
 
 
+def test_discover_sessions_filter_by_discordo():
+    with (
+        patch("agent_sessions.list_claude_sessions", return_value=[]) as mock_claude,
+        patch("agent_sessions.list_codex_sessions", return_value=[]) as mock_codex,
+        patch("agent_sessions.list_opencode_sessions", return_value=[]) as mock_opencode,
+        patch(
+            "agent_sessions.list_discordo_sessions",
+            return_value=[
+                _make_summary("d1", RunnerType.DISCORDO, "2026-01-01T00:00:00Z"),
+            ],
+        ) as mock_discordo,
+        patch("agent_sessions.list_endcord_sessions", return_value=[]) as mock_endcord,
+        patch("agent_sessions.list_cordless_sessions", return_value=[]) as mock_cordless,
+        patch("agent_sessions.list_pi_sessions", return_value=[]) as mock_pi,
+    ):
+        sessions = discover_sessions(runner_type=RunnerType.DISCORDO)
+
+    assert len(sessions) == 1
+    assert sessions[0].id == "d1"
+    mock_claude.assert_not_called()
+    mock_codex.assert_not_called()
+    mock_opencode.assert_not_called()
+    mock_endcord.assert_not_called()
+    mock_cordless.assert_not_called()
+    mock_pi.assert_not_called()
+    mock_discordo.assert_called_once()
+
+
+def test_get_session_detail_routes_to_endcord():
+    detail = SessionDetail(
+        id="e1",
+        runner_type=RunnerType.ENDCORD,
+        directory="/tmp/endcord",
+        last_activity="2026-01-01T00:00:00Z",
+        message_count=0,
+        is_running=False,
+        messages=[],
+    )
+    with patch("agent_sessions.get_endcord_session_detail", return_value=detail) as mock:
+        result = get_session_detail("e1", RunnerType.ENDCORD)
+
+    assert result is detail
+    mock.assert_called_once_with("e1", limit=100)
+
+
+def test_get_session_detail_routes_to_cordless():
+    detail = SessionDetail(
+        id="r1",
+        runner_type=RunnerType.CORDLESS,
+        directory="/tmp/cordless",
+        last_activity="2026-01-01T00:00:00Z",
+        message_count=0,
+        is_running=False,
+        messages=[],
+    )
+    with patch("agent_sessions.get_cordless_session_detail", return_value=detail) as mock:
+        result = get_session_detail("r1", RunnerType.CORDLESS)
+
+    assert result is detail
+    mock.assert_called_once_with("r1", limit=100)
+
+
 def test_get_session_detail_returns_none_for_not_found():
     with patch("agent_sessions.get_claude_session_detail", return_value=None):
         result = get_session_detail("nonexistent", RunnerType.CLAUDE_CODE)
